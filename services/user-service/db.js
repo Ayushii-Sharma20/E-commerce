@@ -1,19 +1,13 @@
-const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
+const mongoose = require("mongoose");
 
-const connectDB = require("./db");
-const userRoutes = require("./routes/userRoutes");
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGO_URI);
+    console.log("MongoDB Connected ✅");
+  } catch (error) {
+    console.log("MongoDB connection error ❌", error);
+    process.exit(1);
+  }
+};
 
-const app = express();
-
-app.use(cors());
-app.use(express.json());
-
-connectDB();
-
-app.use("/users", userRoutes);
-
-app.listen(process.env.PORT, () => {
-  console.log(`User Service running on port ${process.env.PORT}`);
-});
+module.exports = connectDB;
