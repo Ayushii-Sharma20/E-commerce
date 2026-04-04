@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { CartProvider, useCart } from '@/lib/cart-context'
-import API from "@/lib/api"
+import { ORDER_API } from "@/lib/api"
 function CheckoutContent() {
   const router = useRouter()
   const { items, total, clearCart } = useCart()
@@ -61,23 +61,21 @@ function CheckoutContent() {
     
     // Simulate order processing
    try {
-  const res = await API.post("/orders", {
-    userId: "123", // later replace with real auth
-
-    items: items.map(item => ({
-      productId: item.product._id,
-      name: item.product.name,
-      price: item.product.price,
-      quantity: item.quantity,
-      size: item.size,
-      color: item.color,
-      image: item.product.image
-    })),
-
-    totalAmount: total,
-    shippingInfo,
-    paymentMethod
-  })
+  const res = await ORDER_API.post("/orders", {
+  userId: "123",
+  items: items.map(item => ({
+    productId: item.product._id,
+    name: item.product.name,
+    price: item.product.price,
+    quantity: item.quantity,
+    size: item.size,
+    color: item.color,
+    image: item.product.image
+  })),
+  totalAmount: total,
+  shippingInfo,
+  paymentMethod
+})
 
   const orderId = res.data._id
 
