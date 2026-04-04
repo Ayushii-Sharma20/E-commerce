@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
+import { use } from "react"
 import Image from 'next/image'
 import Link from 'next/link'
 import { Star, Minus, Plus, ShoppingBag, ChevronLeft } from 'lucide-react'
@@ -177,15 +178,16 @@ const handleAddToCart = () => {
     </div>
   )
 }
+export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params)
 
-export default function ProductPage({ params }: { params: { id: string } }) {
   return (
     <>
       <Navbar />
       <main className="flex-1">
-        <ProductDetailContent id={params.id} />
+        <ProductDetailContent id={id} />
       </main>
       <Footer />
-   </>
+    </>
   )
 }

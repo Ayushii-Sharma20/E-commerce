@@ -109,9 +109,12 @@ function FeaturedProducts() {
           </Button>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
+        {featuredProducts.map((product, index) => (
+  <ProductCard
+    key={`${product._id || product._id}-${index}`}
+    product={product}
+  />
+))}
         </div>
         <div className="mt-8 text-center md:hidden">
           <Button asChild variant="outline">
@@ -144,9 +147,12 @@ function TrendingSection() {
           </p>
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {trendingProducts.map((product) => (
-            <ProductCard key={product._id} product={product} />
-          ))}
+         {trendingProducts.map((product, index) => (
+  <ProductCard
+    key={`${product._id || product._id}-${index}`}
+    product={product}
+  />
+))}
         </div>
       </div>
     </section>
