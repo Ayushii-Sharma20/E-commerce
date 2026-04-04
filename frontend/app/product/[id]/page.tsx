@@ -178,8 +178,8 @@ const handleAddToCart = () => {
     </div>
   )
 }
-export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
+export default function ProductPage({ params }: { params: { id: string } }) {
+  const { id } = params
 
   return (
     <>
