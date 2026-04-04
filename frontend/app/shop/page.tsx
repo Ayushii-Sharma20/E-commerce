@@ -1,24 +1,17 @@
-"use client";
+'use client'
 
-import { useState, useMemo, useEffect } from "react";
-import { Search, SlidersHorizontal, X } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
-import { ProductCard } from "@/components/product-card";
-import { CartProvider } from "@/lib/cart-context";
-import API from "../../lib/api";
-const ITEMS_PER_PAGE = 8;
+import { useState, useMemo, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Slider } from "@/components/ui/slider"
+import { Navbar } from "@/components/navbar"
+import { Footer } from "@/components/footer"
+import { ProductCard } from "@/components/product-card"
+import { CartProvider } from "@/lib/cart-context"
+import API from "@/lib/api"
+
+const ITEMS_PER_PAGE = 8
 
 function FilterSidebar({
   products,
@@ -28,34 +21,39 @@ function FilterSidebar({
   setPriceRange,
   onReset,
 }: any) {
-  const categories = [...new Set(products.map((p: any) => p.category))];
+
+  const categories = [...new Set(products.map((p: any) => p.category))]
 
   const toggleCategory = (category: string) => {
     setSelectedCategories(
       selectedCategories.includes(category)
         ? selectedCategories.filter((c: string) => c !== category)
         : [...selectedCategories, category]
-    );
-  };
+    )
+  }
 
   return (
     <div className="space-y-6">
       {/* Categories */}
-     <div>
-  <h3 className="mb-4 font-semibold">Categories</h3>
-  <div className="space-y-3">
-   {categories.map((category) => (
-  <div key={category as string} className="flex items-center space-x-2">
-    <Checkbox
-      checked={selectedCategories.includes(category as string)}
-      onCheckedChange={() => toggleCategory(category as string)}
-    />
-    <span>{category as string}</span>
-  </div>
-))}
-   
-  </div>
-</div>
+      <div>
+        <h3 className="mb-4 font-semibold">Categories</h3>
+        <div className="space-y-3">
+         {categories.map((category) => {
+  const cat = category as string;
+
+  return (
+    <div key={cat} className="flex items-center space-x-2">
+      <Checkbox
+        checked={selectedCategories.includes(cat)}
+        onCheckedChange={() => toggleCategory(cat)}
+      />
+      <span>{cat}</span>
+    </div>
+  );
+})}
+        </div>
+      </div>
+
       {/* Price */}
       <div>
         <h3 className="mb-4 font-semibold">Price Range</h3>
@@ -70,63 +68,68 @@ function FilterSidebar({
 
       <Button onClick={onReset}>Reset Filters</Button>
     </div>
-  );
+  )
 }
 
 function ShopContent() {
-  const [products, setProducts] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
-  const [currentPage, setCurrentPage] = useState(1);
 
-  // 🔥 FETCH FROM BACKEND
+  const [products, setProducts] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)   // ✅ ADDED
+
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000])
+  const [currentPage, setCurrentPage] = useState(1)
+
+  // ✅ FIXED FETCH
   useEffect(() => {
-  console.log("API:", API);
-  console.log("TYPE:", typeof API.get);
-
-  API.get("/products")
-    .then(res => {
-      console.log("DATA:", res.data); // optional
-      setProducts(res.data);
-    })
-    .catch(err => console.error(err));
-}, []);
+    API.get("/products")
+      .then(res => {
+        setProducts(res.data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [])
 
   // 🔍 FILTER
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
       const search =
-        p.name.toLowerCase().includes(searchQuery.toLowerCase());
+        p.name.toLowerCase().includes(searchQuery.toLowerCase())
 
       const category =
         selectedCategories.length === 0 ||
-        selectedCategories.includes(p.category);
+        selectedCategories.includes(p.category)
 
-      const price = p.price >= priceRange[0] && p.price <= priceRange[1];
+      const price =
+        p.price >= priceRange[0] && p.price <= priceRange[1]
 
-      return search && category && price;
-    });
-  }, [products, searchQuery, selectedCategories, priceRange]);
+      return search && category && price
+    })
+  }, [products, searchQuery, selectedCategories, priceRange])
 
   // 📄 PAGINATION
   const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredProducts.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredProducts, currentPage]);
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredProducts, currentPage])
 
-  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(filteredProducts.length / ITEMS_PER_PAGE)
 
   const resetFilters = () => {
-    setSearchQuery("");
-    setSelectedCategories([]);
-    setPriceRange([0, 100000]);
-    setCurrentPage(1);
-  };
+    setSearchQuery("")
+    setSelectedCategories([])
+    setPriceRange([0, 100000])
+    setCurrentPage(1)
+  }
 
   return (
     <div className="p-6">
-      {/* Search */}
+
+      {/* SEARCH */}
       <Input
         placeholder="Search products..."
         value={searchQuery}
@@ -134,7 +137,8 @@ function ShopContent() {
       />
 
       <div className="flex gap-8 mt-6">
-        {/* Sidebar */}
+
+        {/* SIDEBAR */}
         <aside className="w-64 hidden lg:block">
           <FilterSidebar
             products={products}
@@ -146,15 +150,23 @@ function ShopContent() {
           />
         </aside>
 
-        {/* Products */}
+        {/* PRODUCTS */}
         <div className="flex-1">
-          <div className="grid grid-cols-3 gap-4">
-            {paginatedProducts.map((p) => (
-              <ProductCard key={p._id} product={p} />
-            ))}
-          </div>
 
-          {/* Pagination */}
+          {/* ✅ LOADING */}
+          {loading ? (
+            <p>Loading products...</p>
+          ) : paginatedProducts.length === 0 ? (
+            <p>No products found</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {paginatedProducts.map((p) => (
+                <ProductCard key={p._id} product={p} />
+              ))}
+            </div>
+          )}
+
+          {/* PAGINATION */}
           <div className="mt-6 flex gap-2">
             {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
               <Button key={n} onClick={() => setCurrentPage(n)}>
@@ -162,18 +174,20 @@ function ShopContent() {
               </Button>
             ))}
           </div>
+
         </div>
       </div>
     </div>
-  );
+  )
 }
-
 export default function ShopPage() {
   return (
-    <CartProvider>
+    <div className="flex min-h-screen flex-col">
       <Navbar />
-      <ShopContent />
+      <main className="flex-1">
+        <ShopContent />
+      </main>
       <Footer />
-    </CartProvider>
-  );
+    </div>
+  )
 }

@@ -22,7 +22,7 @@ export function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/product/${product.id}`}>
+    <Link href={`/product/${product._id}`}>
       <Card className="group overflow-hidden border-0 bg-card shadow-sm transition-all duration-300 hover:shadow-md">
         <div className="relative aspect-[4/5] overflow-hidden">
           <Image

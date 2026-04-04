@@ -14,7 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { CartProvider, useCart } from '@/lib/cart-context'
-
+import API from "@/lib/api"
 function CheckoutContent() {
   const router = useRouter()
   const { items, total, clearCart } = useCart()
@@ -60,13 +60,37 @@ function CheckoutContent() {
     setIsLoading(true)
     
     // Simulate order processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    const orderId = `ORD-${Date.now().toString().slice(-6)}`
-    clearCart()
-    
-    setIsLoading(false)
-    router.push(`/order-confirmation?id=${orderId}`)
+   try {
+  const res = await API.post("/orders", {
+    userId: "123", // later replace with real auth
+
+    items: items.map(item => ({
+      productId: item.product._id,
+      name: item.product.name,
+      price: item.product.price,
+      quantity: item.quantity,
+      size: item.size,
+      color: item.color,
+      image: item.product.image
+    })),
+
+    totalAmount: total,
+    shippingInfo,
+    paymentMethod
+  })
+
+  const orderId = res.data._id
+
+  clearCart()
+  setIsLoading(false)
+
+  router.push(`/order-confirmation?id=${orderId}`)
+
+} catch (err) {
+  console.error(err)
+  setIsLoading(false)
+  alert("Order failed")
+}
   }
 
   if (items.length === 0) {
@@ -251,7 +275,7 @@ function CheckoutContent() {
                 <div className="max-h-48 space-y-3 overflow-y-auto">
                   {items.map((item) => (
                     <div 
-                      key={`${item.product.id}-${item.size}-${item.color}`}
+                      key={`${item.product._id}-${item.size}-${item.color}`}
                       className="flex gap-3"
                     >
                       <div className="relative h-14 w-12 shrink-0 overflow-hidden rounded bg-secondary">
@@ -312,14 +336,12 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <CartProvider>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">
-          <CheckoutContent />
-        </main>
-        <Footer />
-      </div>
-    </CartProvider>
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <main className="flex-1">
+        <CheckoutContent />
+      </main>
+      <Footer />
+    </div>
   )
 }
