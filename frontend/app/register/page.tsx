@@ -65,10 +65,34 @@ export default function RegisterPage() {
     setIsLoading(true)
     
     // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsLoading(false)
-    router.push('/login')
+   try {
+  const res = await fetch("http://localhost:3001/api/users/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name: formData.name,
+      email: formData.email,
+      password: formData.password
+    })
+  })
+
+  const data = await res.json()
+
+  if (!res.ok) {
+    throw new Error(data.message || "Registration failed")
+  }
+
+  alert("Account created successfully ✅")
+
+  router.push("/login")
+
+} catch (err: any) {
+  alert(err.message || "Registration failed ❌")
+}
+
+setIsLoading(false)
   }
 
   return (

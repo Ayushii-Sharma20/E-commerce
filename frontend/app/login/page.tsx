@@ -38,20 +38,38 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setIsLoading(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    setIsLoading(false)
-    router.push('/')
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
+
+  if (!validateForm()) return
+
+  setIsLoading(true)
+
+  try {
+    const res = await fetch("http://localhost:3001/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(formData)
+    })
+
+    const data = await res.json()
+
+    if (!res.ok) {
+      throw new Error(data.message || "Login failed")
+    }
+
+    localStorage.setItem("token", data.token)
+
+    router.push("/profile")
+
+  } catch (err: any) {
+    alert(err.message || "Login failed ❌")
   }
 
+  setIsLoading(false)
+}
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
