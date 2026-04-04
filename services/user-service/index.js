@@ -12,7 +12,7 @@ app.use(express.json());
 
 connectDB();
 
-app.use("/users", userRoutes);
+app.use("/api/users", userRoutes);
 
 app.listen(process.env.PORT, () => {
   console.log(`User Service running on port ${process.env.PORT}`);
