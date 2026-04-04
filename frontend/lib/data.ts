@@ -6,7 +6,7 @@ export const products: Product[] = [
     name: 'Elegant Floral Maxi Dress',
     price: 89.99,
     originalPrice: 129.99,
-    image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/1200x/53/87/a3/5387a37f0b4d296c0f73780ee3a8cafa.jpg',
     category: 'Dresses',
     rating: 4.8,
     reviews: 124,
@@ -21,7 +21,7 @@ export const products: Product[] = [
     id: '2',
     name: 'Classic Silk Blouse',
     price: 65.00,
-    image: 'https://images.unsplash.com/photo-1551489186-cf8726f514f8?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/736x/f1/f6/66/f1f66621796165745705b3216e80df48.jpg',
     category: 'Tops',
     rating: 4.6,
     reviews: 89,
@@ -36,7 +36,7 @@ export const products: Product[] = [
     name: 'High-Waisted Palazzo Pants',
     price: 75.00,
     originalPrice: 95.00,
-    image: 'https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/736x/52/27/20/52272072d38f330090505fc1e975df8e.jpg',
     category: 'Bottoms',
     rating: 4.7,
     reviews: 156,
@@ -50,7 +50,7 @@ export const products: Product[] = [
     id: '4',
     name: 'Pearl Drop Earrings',
     price: 45.00,
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/736x/e1/59/23/e15923f90021340dcba00f32ae98ef37.jpg',
     category: 'Accessories',
     rating: 4.9,
     reviews: 203,
@@ -77,9 +77,9 @@ export const products: Product[] = [
   },
   {
     id: '6',
-    name: 'Structured Leather Tote',
+    name: 'Shoes',
     price: 185.00,
-    image: 'https://images.unsplash.com/photo-1584917865442-de89df76afd3?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/736x/27/69/34/2769346f88f52c75bfe17064b76d0b2f.jpg',
     category: 'Accessories',
     rating: 4.7,
     reviews: 145,
@@ -91,9 +91,9 @@ export const products: Product[] = [
   },
   {
     id: '7',
-    name: 'Linen Midi Skirt',
+    name: 'Necklace',
     price: 68.00,
-    image: 'https://images.unsplash.com/photo-1583496661160-fb5886a0uj49?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/736x/f7/ba/d8/f7bad8b4a1416fba548bbee476578a0f.jpg',
     category: 'Bottoms',
     rating: 4.5,
     reviews: 92,
@@ -107,7 +107,7 @@ export const products: Product[] = [
     name: 'Satin Wrap Dress',
     price: 120.00,
     originalPrice: 160.00,
-    image: 'https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?w=400&h=500&fit=crop',
+    image: 'https://i.pinimg.com/736x/27/69/34/2769346f88f52c75bfe17064b76d0b2f.jpg',
     category: 'Dresses',
     rating: 4.9,
     reviews: 187,
@@ -121,9 +121,9 @@ export const products: Product[] = [
 ]
 
 export const categories = [
-  { name: 'Dresses', image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&h=300&fit=crop', count: 45 },
-  { name: 'Tops', image: 'https://images.unsplash.com/photo-1551489186-cf8726f514f8?w=400&h=300&fit=crop', count: 62 },
-  { name: 'Accessories', image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&h=300&fit=crop', count: 38 }
+  { name: 'Accessories', image: 'https://i.pinimg.com/736x/f7/ba/d8/f7bad8b4a1416fba548bbee476578a0f.jpg', count: 45 },
+  { name: 'Tops', image: 'https://i.pinimg.com/736x/da/ed/b3/daedb379b72f78384c6e8eef6e81e3bc.jpg', count: 62 },
+  { name: 'Footwear', image: 'https://i.pinimg.com/736x/b2/cf/99/b2cf9922157cca1fa9e635ee44d3c25c.jpg', count: 38 }
 ]
 
 export const sampleOrders: Order[] = [
