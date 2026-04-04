@@ -21,13 +21,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = (product: Product, quantity: number, size: string, color: string) => {
     setItems(prev => {
       const existingIndex = prev.findIndex(
-        item => item.product.id === product.id && item.size === size && item.color === color
+        item => item.product._id === product._id && item.size === size && item.color === color
       )
       
       if (existingIndex >= 0) {
         const updated = [...prev]
         updated[existingIndex].quantity += quantity
         return updated
+        
       }
       
       return [...prev, { product, quantity, size, color }]
@@ -36,7 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeItem = (productId: string, size: string, color: string) => {
     setItems(prev => prev.filter(
-      item => !(item.product.id === productId && item.size === size && item.color === color)
+      item => !(item.product._id === productId && item.size === size && item.color === color)
     ))
   }
 
@@ -47,7 +48,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
     
     setItems(prev => prev.map(item => {
-      if (item.product.id === productId && item.size === size && item.color === color) {
+      if (item.product._id === productId && item.size === size && item.color === color) {
         return { ...item, quantity }
       }
       return item

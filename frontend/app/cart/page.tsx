@@ -8,13 +8,13 @@ import { Separator } from '@/components/ui/separator'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { CartProvider, useCart } from '@/lib/cart-context'
-
+import { ORDER_API } from '@/lib/api'
 function CartItem({ 
   item, 
   onUpdateQuantity, 
   onRemove 
 }: { 
-  item: { product: { id: string; name: string; price: number; image: string }; quantity: number; size: string; color: string }
+  item: { product: { _id: string; name: string; price: number; image: string }; quantity: number; size: string; color: string }
   onUpdateQuantity: (quantity: number) => void
   onRemove: () => void
 }) {
@@ -127,12 +127,12 @@ function CartContent() {
             <div className="divide-y divide-border">
               {items.map((item) => (
                 <CartItem
-                  key={`${item.product.id}-${item.size}-${item.color}`}
+                  key={`${item.product._id}-${item.size}-${item.color}`}
                   item={item}
                   onUpdateQuantity={(quantity) => 
-                    updateQuantity(item.product.id, item.size, item.color, quantity)
+                    updateQuantity(item.product._id, item.size, item.color, quantity)
                   }
-                  onRemove={() => removeItem(item.product.id, item.size, item.color)}
+                  onRemove={() => removeItem(item.product._id, item.size, item.color)}
                 />
               ))}
             </div>
@@ -192,7 +192,7 @@ function CartContent() {
 
 export default function CartPage() {
   return (
-    <CartProvider>
+    
       <div className="flex min-h-screen flex-col">
         <Navbar />
         <main className="flex-1">
@@ -200,6 +200,6 @@ export default function CartPage() {
         </main>
         <Footer />
       </div>
-    </CartProvider>
+  
   )
 }

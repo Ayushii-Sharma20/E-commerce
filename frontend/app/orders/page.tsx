@@ -51,7 +51,7 @@ function OrderCard({ order }: { order: Order }) {
           <div className="flex flex-wrap gap-3">
             {order.items.slice(0, 3).map((item, index) => (
               <div 
-                key={`${item.product.id}-${index}`}
+                key={`${item.product._id}-${index}`}
                 className="relative h-16 w-16 overflow-hidden rounded-lg bg-secondary"
               >
                 <Image

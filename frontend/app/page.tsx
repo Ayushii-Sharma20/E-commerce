@@ -10,11 +10,11 @@ import { products, categories } from '@/lib/data'
 
 function HeroSection() {
   return (
-    <section className="relative overflow-hidden bg-secondary/30">
+   <section className="relative overflow-hidden bg-[#fde4ec]">
       <div className="container mx-auto px-4 py-16 md:py-24 lg:py-32">
         <div className="mx-auto max-w-3xl text-center">
           <p className="mb-4 text-sm font-medium uppercase tracking-widest text-primary">
-            New Collection 2024
+            New Collection 2026
           </p>
           <h1 className="mb-6 font-serif text-4xl font-semibold leading-tight tracking-tight text-foreground md:text-5xl lg:text-6xl">
             <span className="text-balance">Discover Your Perfect Style</span>
@@ -110,7 +110,7 @@ function FeaturedProducts() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
         <div className="mt-8 text-center md:hidden">
@@ -145,7 +145,7 @@ function TrendingSection() {
         </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {trendingProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <ProductCard key={product._id} product={product} />
           ))}
         </div>
       </div>
