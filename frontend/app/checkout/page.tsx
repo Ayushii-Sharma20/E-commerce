@@ -52,45 +52,55 @@ function CheckoutContent() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setIsLoading(true)
-    
-    // Simulate order processing
-   try {
-  const res = await ORDER_API.post("/orders", {
-  userId: "123",
-  items: items.map(item => ({
-    productId: item.product._id,
-    name: item.product.name,
-    price: item.product.price,
-    quantity: item.quantity,
-    size: item.size,
-    color: item.color,
-    image: item.product.image
-  })),
-  totalAmount: total,
-  shippingInfo,
-  paymentMethod
-})
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
+  e.preventDefault()
+  
+  if (!validateForm()) return
+  
+  setIsLoading(true)
+  
+  try {
+    // ✅ Get real userId from localStorage
+    const userId = localStorage.getItem("userId")
 
-  const orderId = res.data._id
+    // ❗ Safety check
+    if (!userId) {
+      alert("User not logged in")
+      setIsLoading(false)
+      return
+    }
 
-  clearCart()
-  setIsLoading(false)
+    const res = await ORDER_API.post("/orders", {
+      userId, // ✅ FIXED (dynamic userId)
 
-  router.push(`/order-confirmation?id=${orderId}`)
+      items: items.map(item => ({
+        productId: item.product._id,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: item.product.image
+      })),
 
-} catch (err) {
-  console.error(err)
-  setIsLoading(false)
-  alert("Order failed")
-}
+      totalAmount: total,
+      shippingInfo,
+      paymentMethod
+    })
+
+    const orderId = res.data._id
+
+    clearCart()
+    setIsLoading(false)
+
+    router.push(`/order-confirmation?id=${orderId}`)
+
+  } catch (err) {
+    console.error(err)
+    setIsLoading(false)
+    alert("Order failed")
   }
-
+}
   if (items.length === 0) {
     return (
       <div className="container mx-auto flex min-h-[50vh] flex-col items-center justify-center px-4 py-16 text-center">

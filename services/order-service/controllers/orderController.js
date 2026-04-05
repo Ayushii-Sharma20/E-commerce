@@ -1,17 +1,20 @@
 const Order = require("../models/Order");
 const axios = require("axios");
+const { sendToQueue } = require('../utils/rabbitmq');
 
 // ✅ Create Order
-const createOrder = async (req, res) => {
+const createOrder = async (req, res) => 
+  {
   const { userId, items, totalAmount, shippingInfo, paymentMethod } = req.body;
 
   try {
-    // ❌ No items
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in order" });
     }
 
-    // 🔥 STEP 1: VALIDATE + RESERVE (loop items)
+    let enrichedItems = [];
+
+    // 🔥 STEP 1: VALIDATE + RESERVE + ENRICH
     for (let item of items) {
       const productRes = await axios.get(
         `http://localhost:3002/api/products/${item.productId}`
@@ -29,17 +32,32 @@ const createOrder = async (req, res) => {
         });
       }
 
-      // 🔒 Reserve stock (friend’s API)
+      // 🔒 Reserve stock
       await axios.post("http://localhost:3004/api/inventory/reserve", {
         productId: item.productId,
         quantity: item.quantity
+      });
+
+      // ✅ Build enriched item (USE BACKEND DATA)
+      enrichedItems.push({
+        productId: product._id,
+        name: product.name,
+        price: product.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+
+        // 🔥 FIX: make image URL absolute
+        image: product.image?.startsWith("http")
+          ? product.image
+          : `http://localhost:3002${product.image}`
       });
     }
 
     // 💾 STEP 2: SAVE ORDER
     const order = new Order({
       userId,
-      items,
+      items: enrichedItems, // ✅ USE ENRICHED DATA
       totalAmount,
       shippingInfo,
       paymentMethod,
@@ -56,8 +74,16 @@ const createOrder = async (req, res) => {
       });
     }
 
+    // 🔄 Update status
     order.status = "CONFIRMED";
     await order.save();
+
+    // 🔔 SEND EVENT
+    sendToQueue({
+      userId: order.userId,
+      message: `Order ${order._id} placed successfully`,
+      type: "order"
+    });
 
     res.status(201).json(order);
 
@@ -81,6 +107,20 @@ const getOrders = async (req, res) => {
   }
 };
 
+// ✅ Get Order By ID
+const getOrderById = async (req, res) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching order" });
+  }
+};
 
 // ✅ Get Orders by User
 const getUserOrders = async (req, res) => {
@@ -95,5 +135,6 @@ const getUserOrders = async (req, res) => {
 module.exports = {
   createOrder,
   getOrders,
-  getUserOrders
+  getUserOrders,
+  getOrderById
 };

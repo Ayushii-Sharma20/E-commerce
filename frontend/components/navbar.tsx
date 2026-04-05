@@ -5,8 +5,16 @@ import Link from 'next/link'
 import { ShoppingBag, Search, Menu, X, User } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet'
 import { useCart } from '@/lib/cart-context'
+import NotificationBell from './notification-bell'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -22,6 +30,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
+
         {/* Mobile Menu */}
         <Sheet>
           <SheetTrigger asChild className="lg:hidden">
@@ -29,24 +38,35 @@ export function Navbar() {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
+
           <SheetContent side="left" className="w-[280px] bg-background">
+
+            {/* ✅ FIXED: Required for accessibility */}
+            <SheetHeader>
+              <SheetTitle>Menu</SheetTitle>
+              <SheetDescription>
+                Navigate through the app
+              </SheetDescription>
+            </SheetHeader>
+
             <nav className="flex flex-col gap-4 pt-8">
               {navLinks.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="text-lg font-medium text-foreground transition-colors hover:text-primary"
+                  className="text-lg font-medium text-foreground hover:text-primary"
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
+
           </SheetContent>
         </Sheet>
 
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <span className="font-serif text-2xl font-semibold tracking-tight text-foreground">
+          <span className="font-serif text-2xl font-semibold">
             StyleSphere
           </span>
         </Link>
@@ -57,7 +77,7 @@ export function Navbar() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+              className="text-sm font-medium text-muted-foreground hover:text-foreground"
             >
               {link.label}
             </Link>
@@ -65,7 +85,11 @@ export function Navbar() {
         </nav>
 
         {/* Right Actions */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
+
+          {/* 🔔 Notifications */}
+          <NotificationBell />
+
           {/* Search */}
           <div className="hidden md:flex md:items-center">
             {isSearchOpen ? (
@@ -80,7 +104,6 @@ export function Navbar() {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsSearchOpen(false)}
-                  aria-label="Close search"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -90,7 +113,6 @@ export function Navbar() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsSearchOpen(true)}
-                aria-label="Open search"
               >
                 <Search className="h-5 w-5" />
               </Button>
@@ -98,28 +120,29 @@ export function Navbar() {
           </div>
 
           {/* Mobile Search */}
-          <Button variant="ghost" size="icon" className="md:hidden" aria-label="Search">
+          <Button variant="ghost" size="icon" className="md:hidden">
             <Search className="h-5 w-5" />
           </Button>
 
           {/* Profile */}
           <Link href="/profile">
-            <Button variant="ghost" size="icon" aria-label="Profile">
+            <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
             </Button>
           </Link>
 
           {/* Cart */}
           <Link href="/cart" className="relative">
-            <Button variant="ghost" size="icon" aria-label="Shopping cart">
+            <Button variant="ghost" size="icon">
               <ShoppingBag className="h-5 w-5" />
               {itemCount > 0 && (
-                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-medium text-primary-foreground">
+                <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-white">
                   {itemCount}
                 </span>
               )}
             </Button>
           </Link>
+
         </div>
       </div>
     </header>
