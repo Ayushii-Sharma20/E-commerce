@@ -42,20 +42,22 @@ const reserveStock = async (req, res) => {
   try {
     const { productId, quantity } = req.body;
 
-    const item = await Inventory.findOne({ productId });
+    const updated = await Inventory.findOneAndUpdate(
+      {
+        productId,
+        stock: { $gte: quantity }
+      },
+      {
+        $inc: { reserved: quantity }
+      },
+      { new: true }
+    );
 
-    if (!item) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    if (item.stock - item.reserved < quantity) {
+    if (!updated) {
       return res.status(400).json({ error: "Not enough stock" });
     }
 
-    item.reserved += quantity;
-
-    await item.save();
-    res.json(item);
+    res.json(updated);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

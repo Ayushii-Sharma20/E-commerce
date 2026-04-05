@@ -9,7 +9,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
 import { CartProvider } from "@/lib/cart-context"
-import API from "@/lib/api"
+import { PRODUCT_API } from "@/lib/api"
 
 const ITEMS_PER_PAGE = 8
 
@@ -83,7 +83,7 @@ function ShopContent() {
 
   // ✅ FIXED FETCH
   useEffect(() => {
-    API.get("/products")
+    PRODUCT_API.get("/")
       .then(res => {
         setProducts(res.data)
         setLoading(false)

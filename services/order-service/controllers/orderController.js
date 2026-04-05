@@ -6,12 +6,11 @@ const createOrder = async (req, res) => {
   const { userId, items, totalAmount, shippingInfo, paymentMethod } = req.body;
 
   try {
-    // ❌ No items
     if (!items || items.length === 0) {
       return res.status(400).json({ message: "No items in order" });
     }
 
-    // 🔥 STEP 1: VALIDATE + RESERVE (loop items)
+    // 🔥 STEP 1: VALIDATE + RESERVE
     for (let item of items) {
       const productRes = await axios.get(
         `http://localhost:3002/api/products/${item.productId}`
@@ -29,7 +28,6 @@ const createOrder = async (req, res) => {
         });
       }
 
-      // 🔒 Reserve stock (friend’s API)
       await axios.post("http://localhost:3004/api/inventory/reserve", {
         productId: item.productId,
         quantity: item.quantity
@@ -59,6 +57,7 @@ const createOrder = async (req, res) => {
     order.status = "CONFIRMED";
     await order.save();
 
+    // ✅ FINAL RESPONSE (VERY IMPORTANT)
     res.status(201).json(order);
 
   } catch (err) {
@@ -80,7 +79,6 @@ const getOrders = async (req, res) => {
     res.status(500).json({ message: "Error fetching orders" });
   }
 };
-
 
 // ✅ Get Orders by User
 const getUserOrders = async (req, res) => {

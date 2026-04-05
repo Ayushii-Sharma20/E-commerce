@@ -52,44 +52,55 @@ function CheckoutContent() {
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!validateForm()) return
-    
-    setIsLoading(true)
-    
-    // Simulate order processing
-   try {
-  const res = await ORDER_API.post("/orders", {
-  userId: "123",
-  items: items.map(item => ({
-    productId: item.product._id,
-    name: item.product.name,
-    price: item.product.price,
-    quantity: item.quantity,
-    size: item.size,
-    color: item.color,
-    image: item.product.image
-  })),
-  totalAmount: total,
-  shippingInfo,
-  paymentMethod
-})
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault()
 
-  const orderId = res.data._id
+  if (!validateForm()) return
 
-  clearCart()
-  setIsLoading(false)
+  setIsLoading(true)
 
-  router.push(`/order-confirmation?id=${orderId}`)
+  try {
+    // ✅ Correct total calculation (IMPORTANT FIX)
+    const calculatedTotal = items.reduce(
+      (sum, item) => sum + item.product.price * item.quantity,
+      0
+    )
 
-} catch (err) {
-  console.error(err)
-  setIsLoading(false)
-  alert("Order failed")
-}
+    const orderData = {
+      userId: "123",
+      items: items.map(item => ({
+        productId: item.product._id,
+        name: item.product.name,
+        price: item.product.price,
+        quantity: item.quantity,
+        size: item.size,
+        color: item.color,
+        image: item.product.image
+      })),
+      totalAmount: calculatedTotal, // ✅ FIXED
+      shippingInfo,
+      paymentMethod
+    }
+
+    console.log("ORDER DATA:", orderData) // ✅ DEBUG
+
+    const res = await ORDER_API.post("/", orderData)
+
+    console.log("ORDER SUCCESS:", res.data)
+
+    const orderId = res.data?._id || res.data?.id
+
+    clearCart()
+
+    router.push(`/order-confirmation?id=${orderId}`)
+
+  } catch (err: any) {
+    console.error("ORDER ERROR:", err.response?.data || err.message)
+    alert("Order failed")
+  } finally {
+    setIsLoading(false) // ✅ ALWAYS STOP LOADING (CRITICAL FIX)
   }
+}
 
   if (items.length === 0) {
     return (
@@ -234,8 +245,8 @@ function CheckoutContent() {
                   </div>
                   <div className="flex items-center space-x-3 rounded-lg border border-border p-4">
                     <RadioGroupItem value="paypal" id="paypal" />
-                    <Label htmlFor="paypal" className="flex-1 cursor-pointer">
-                      PayPal
+                    <Label htmlFor="COD" className="flex-1 cursor-pointer">
+                      Cash on Delivery
                     </Label>
                   </div>
                 </RadioGroup>
