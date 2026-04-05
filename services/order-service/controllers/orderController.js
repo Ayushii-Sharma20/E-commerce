@@ -12,13 +12,11 @@ const createOrder = async (req, res) =>
       return res.status(400).json({ message: "No items in order" });
     }
 
-<<<<<<< HEAD
-    // 🔥 STEP 1: VALIDATE + RESERVE
-=======
+
     let enrichedItems = [];
 
     // 🔥 STEP 1: VALIDATE + RESERVE + ENRICH
->>>>>>> 4dbd4ea08b1e4f072408e20fdf3e4c21f854ee7a
+
     for (let item of items) {
       const productRes = await axios.get(
         `http://localhost:3002/api/products/${item.productId}`
@@ -85,9 +83,7 @@ const createOrder = async (req, res) =>
     order.status = "CONFIRMED";
     await order.save();
 
-<<<<<<< HEAD
-    // ✅ FINAL RESPONSE (VERY IMPORTANT)
-=======
+
     // 🔔 SEND EVENT
     sendToQueue({
       userId: order.userId,
@@ -95,7 +91,7 @@ const createOrder = async (req, res) =>
       type: "order"
     });
 
->>>>>>> 4dbd4ea08b1e4f072408e20fdf3e4c21f854ee7a
+
     res.status(201).json(order);
 
   } catch (err) {
@@ -118,8 +114,7 @@ const getOrders = async (req, res) => {
   }
 };
 
-<<<<<<< HEAD
-=======
+
 // ✅ Get Order By ID
 const getOrderById = async (req, res) => {
   try {
@@ -135,7 +130,7 @@ const getOrderById = async (req, res) => {
   }
 };
 
->>>>>>> 4dbd4ea08b1e4f072408e20fdf3e4c21f854ee7a
+
 // ✅ Get Orders by User
 const getUserOrders = async (req, res) => {
   try {
