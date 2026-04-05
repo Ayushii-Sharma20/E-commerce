@@ -29,6 +29,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         updated[existingIndex].quantity += quantity
         return updated
         
+        
       }
       
       return [...prev, { product, quantity, size, color }]

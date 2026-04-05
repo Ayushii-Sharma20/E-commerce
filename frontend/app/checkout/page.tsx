@@ -73,7 +73,7 @@ function CheckoutContent() {
       return
     }
 
-    const res = await ORDER_API.post("/orders", {
+    const res = await ORDER_API.post("/", {
       userId, // ✅ FIXED (dynamic userId)
 
       items: items.map(item => ({
@@ -98,11 +98,18 @@ function CheckoutContent() {
 
     router.push(`/order-confirmation?id=${orderId}`)
 
-  } catch (err) {
-    console.error(err)
-    setIsLoading(false)
-    alert("Order failed")
-  }
+  }  catch (err: any) {
+  console.error("❌ ORDER ERROR:", err.response?.data || err.message)
+
+  setIsLoading(false)
+
+  const message =
+    err.response?.data?.message ||
+    err.response?.data ||
+    "Out of stock"
+
+  alert(message)
+}
 }
 
   if (items.length === 0) {

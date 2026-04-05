@@ -37,12 +37,16 @@ const createOrder = async (req, res) =>
 
 
       // 🔒 Reserve stock
-
-      await axios.post("http://localhost:3004/api/inventory/reserve", {
-        productId: item.productId,
-        quantity: item.quantity
-      });
-
+try {
+  await axios.post("http://localhost:3004/api/inventory/reserve", {
+    productId: item.productId,
+    quantity: item.quantity
+  });
+} catch (err) {
+  return res.status(400).json({
+    message: `${product.name} is out of stock`
+  });
+}
       // ✅ Build enriched item (USE BACKEND DATA)
       enrichedItems.push({
         productId: product._id,
@@ -95,13 +99,26 @@ const createOrder = async (req, res) =>
     res.status(201).json(order);
 
   } catch (err) {
-    console.error(err.message);
+  console.error("❌ ORDER ERROR:", err.message)
 
-    res.status(500).json({
-      message: "Error creating order",
-      details: err.response?.data || err.message
-    });
-  }
+  // ✅ If error comes from another service (inventory/product)
+  if (err.response && err.response.data) {
+  const errorData = err.response.data
+
+  return res.status(err.response.status || 400).json({
+    message:
+      errorData.message ||
+      errorData.error ||
+      errorData ||
+      "Out of stock"
+  })
+}
+
+  // ✅ Fallback (internal error)
+  res.status(500).json({
+    message: "Something went wrong while creating order"
+  })
+}
 };
 
 // ✅ Get All Orders

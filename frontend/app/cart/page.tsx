@@ -22,6 +22,7 @@ function CartItem({
     <div className="flex gap-4 py-4">
       <div className="relative h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-secondary">
         <Image
+
           src={item.product.image}
           alt={item.product.name}
           fill
@@ -47,16 +48,21 @@ function CartItem({
         </div>
         <div className="mt-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-8 w-8"
-              onClick={() => onUpdateQuantity(item.quantity - 1)}
-              disabled={item.quantity <= 1}
-              aria-label="Decrease quantity"
-            >
-              <Minus className="h-3 w-3" />
-            </Button>
+           <Button
+  variant="outline"
+  size="icon"
+  className="h-8 w-8"
+  onClick={() => {
+    if (item.quantity === 1) {
+      onRemove() // ✅ remove item
+    } else {
+      onUpdateQuantity(item.quantity - 1)
+    }
+  }}
+  aria-label="Decrease quantity"
+>
+  <Minus className="h-3 w-3" />
+</Button>
             <span className="w-8 text-center text-sm">{item.quantity}</span>
             <Button
               variant="outline"
