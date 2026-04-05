@@ -1,20 +1,20 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { use } from "react"
 import Image from 'next/image'
 import Link from 'next/link'
-import { Star, Minus, Plus, ShoppingBag, ChevronLeft } from 'lucide-react'
+import { Star, Minus, Plus, ChevronLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import {  useCart } from '@/lib/cart-context'
-import { products } from '@/lib/data'
-import { ORDER_API } from "@/lib/api";
+import { useCart } from '@/lib/cart-context'
 import { useRouter } from "next/navigation"
+
+// 🔹 Product Detail Component
 function ProductDetailContent({ id }: { id: string }) {
-const router = useRouter()
+  const router = useRouter()
+
   const [product, setProduct] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -24,21 +24,24 @@ const router = useRouter()
   const [selectedColor, setSelectedColor] = useState('')
   const [quantity, setQuantity] = useState(1)
 
-  // ✅ Fetch product
+  // ✅ Fetch product (correct way)
   useEffect(() => {
-    fetch(`http://localhost:3002/api/products/${id}`)
-      .then(res => res.json())
-      .then(data => {
+    const fetchProduct = async () => {
+      try {
+        const res = await fetch(`http://localhost:3002/api/products/${id}`)
+        const data = await res.json()
         setProduct(data)
+      } catch (err) {
+        console.error("❌ Product fetch error:", err)
+      } finally {
         setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setLoading(false)
-      })
+      }
+    }
+
+    fetchProduct()
   }, [id])
 
-  // ✅ Loading
+  // ⏳ Loading
   if (loading) {
     return <p className="text-center py-10">Loading...</p>
   }
@@ -55,25 +58,25 @@ const router = useRouter()
     )
   }
 
-  // ✅ ENHANCED PRODUCT (ADD AFTER PRODUCT CHECK)
+  // ✅ Enhance product
   const enhancedProduct = {
-  ...product,
-  sizes: ["S", "M", "L"],
-  colors: ["Red", "Black"],
-}
-
-const handleAddToCart = () => {
-  if (!selectedSize || !selectedColor) {
-    alert("Please select size and color")
-    return
+    ...product,
+    sizes: ["S", "M", "L"],
+    colors: ["Red", "Black"],
   }
 
-  addItem(enhancedProduct, quantity, selectedSize, selectedColor)
+  const handleAddToCart = () => {
+    if (!selectedSize || !selectedColor) {
+      alert("Please select size and color")
+      return
+    }
 
+    addItem(enhancedProduct, quantity, selectedSize, selectedColor)
 
-  // ✅ Redirect to cart
-  router.push("/cart")
-}
+    // ✅ Redirect
+    router.push("/cart")
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
 
@@ -106,7 +109,7 @@ const handleAddToCart = () => {
             {enhancedProduct.name}
           </h1>
 
-          {/* ⭐ Rating */}
+          {/* Rating */}
           <div className="flex items-center gap-2 mb-4">
             <Star className="h-4 w-4 text-primary fill-primary" />
             <span>{enhancedProduct.rating}</span>
@@ -169,17 +172,19 @@ const handleAddToCart = () => {
           </div>
 
           {/* ADD TO CART */}
-         <Button onClick={handleAddToCart}>
-  Add to Cart
-</Button>
+          <Button onClick={handleAddToCart}>
+            Add to Cart
+          </Button>
 
         </div>
       </div>
     </div>
   )
 }
-export default async function ProductPage({ params }: any) {
-  const { id } = await params
+
+// 🔹 FIXED PAGE (NO async ❌)
+export default function ProductPage({ params }: any) {
+  const { id } = params
 
   return (
     <>

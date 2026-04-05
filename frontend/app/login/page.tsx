@@ -60,7 +60,11 @@ export default function LoginPage() {
       throw new Error(data.message || "Login failed")
     }
 
-    localStorage.setItem("token", data.token)
+   // ✅ Store token
+localStorage.setItem("token", data.token)
+
+// ✅ 🔥 ADD THIS LINE (VERY IMPORTANT)
+localStorage.setItem("userId", data.user._id)
 
     router.push("/profile")
 

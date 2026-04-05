@@ -9,7 +9,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { CartProvider } from '@/lib/cart-context'
 
 function OrderConfirmationContent() {
   const searchParams = useSearchParams()
@@ -19,22 +18,24 @@ function OrderConfirmationContent() {
     <div className="container mx-auto flex min-h-[60vh] items-center justify-center px-4 py-16">
       <Card className="w-full max-w-lg text-center">
         <CardContent className="pt-8">
+
           <div className="mb-6 flex justify-center">
             <div className="rounded-full bg-green-100 p-4">
               <CheckCircle className="h-12 w-12 text-green-600" />
             </div>
           </div>
 
-          <h1 className="mb-2 font-serif text-3xl font-semibold text-foreground">
+          <h1 className="mb-2 font-serif text-3xl font-semibold">
             Order Confirmed!
           </h1>
+
           <p className="mb-6 text-muted-foreground">
-            Thank you for your purchase. Your order has been received and is being processed.
+            Thank you for your purchase. Your order has been received.
           </p>
 
           <div className="mb-6 rounded-lg bg-secondary/50 p-4">
             <p className="text-sm text-muted-foreground">Order Number</p>
-            <p className="text-lg font-semibold text-foreground">{orderId}</p>
+            <p className="text-lg font-semibold">{orderId}</p>
           </div>
 
           <div className="mb-6 space-y-4 text-left">
@@ -42,22 +43,24 @@ function OrderConfirmationContent() {
               <Package className="h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium">Estimated Delivery</p>
-                <p className="text-sm text-muted-foreground">3-5 business days</p>
+                <p className="text-sm text-muted-foreground">
+                  3-5 business days
+                </p>
               </div>
             </div>
+
             <Separator />
+
             <p className="text-sm text-muted-foreground">
-              A confirmation email has been sent to your email address with the order details 
-              and tracking information.
+              A confirmation email has been sent with order details.
             </p>
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild className="flex-1">
-              <Link href="/orders">
-                View Order Details
-              </Link>
+              <Link href="/orders">View Order Details</Link>
             </Button>
+
             <Button asChild variant="outline" className="flex-1">
               <Link href="/shop">
                 Continue Shopping
@@ -65,6 +68,7 @@ function OrderConfirmationContent() {
               </Link>
             </Button>
           </div>
+
         </CardContent>
       </Card>
     </div>
@@ -73,20 +77,16 @@ function OrderConfirmationContent() {
 
 export default function OrderConfirmationPage() {
   return (
-    <CartProvider>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">
-          <Suspense fallback={
-            <div className="container mx-auto flex min-h-[60vh] items-center justify-center">
-              <p>Loading...</p>
-            </div>
-          }>
-            <OrderConfirmationContent />
-          </Suspense>
-        </main>
-        <Footer />
-      </div>
-    </CartProvider>
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+
+      <main className="flex-1">
+        <Suspense fallback={<p className="text-center mt-10">Loading...</p>}>
+          <OrderConfirmationContent />
+        </Suspense>
+      </main>
+
+      <Footer />
+    </div>
   )
 }

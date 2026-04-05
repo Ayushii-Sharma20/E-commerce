@@ -4,7 +4,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    domains: [
+      'localhost',
+      'i.pinimg.com',
+      'images.unsplash.com' // 🔥 ADD THIS
+    ],
   },
 }
 

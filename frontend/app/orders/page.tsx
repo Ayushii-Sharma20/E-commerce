@@ -1,18 +1,29 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { Package, ChevronRight, Clock, Truck, CheckCircle, XCircle } from 'lucide-react'
+
+import {
+  Package,
+  ChevronRight,
+  Clock,
+  Truck,
+  CheckCircle,
+  XCircle
+} from 'lucide-react'
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
-import { CartProvider } from '@/lib/cart-context'
-import { sampleOrders } from '@/lib/data'
-import { Order } from '@/lib/types'
 
-const statusConfig: Record<Order['status'], { label: string; icon: React.ElementType; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
+/* =========================
+   STATUS CONFIG
+========================= */
+const statusConfig: any = {
   pending: { label: 'Pending', icon: Clock, variant: 'secondary' },
   processing: { label: 'Processing', icon: Package, variant: 'default' },
   shipped: { label: 'Shipped', icon: Truck, variant: 'default' },
@@ -20,68 +31,69 @@ const statusConfig: Record<Order['status'], { label: string; icon: React.Element
   cancelled: { label: 'Cancelled', icon: XCircle, variant: 'destructive' }
 }
 
-function OrderCard({ order }: { order: Order }) {
-  
-  const status = statusConfig[order.status]
+/* =========================
+   ORDER CARD
+========================= */
+function OrderCard({ order }: any) {
+  const status = statusConfig[order.status] || statusConfig.processing
   const StatusIcon = status.icon
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+      <CardHeader className="flex flex-row items-center justify-between pb-4">
         <div>
           <CardTitle className="text-base font-medium">
-            Order {order.id}
+            Order {order._id}
           </CardTitle>
           <p className="mt-1 text-sm text-muted-foreground">
-            Placed on {new Date(order.date).toLocaleDateString('en-US', {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
+            Placed on {new Date(order.createdAt).toLocaleDateString()}
           </p>
         </div>
+
         <Badge variant={status.variant} className="flex items-center gap-1">
           <StatusIcon className="h-3 w-3" />
           {status.label}
         </Badge>
       </CardHeader>
+
       <CardContent>
         <div className="space-y-4">
-          {/* Order Items Preview */}
-          <div className="flex flex-wrap gap-3">
-            {order.items.slice(0, 3).map((item, index) => (
-              <div 
-                key={`${item.product._id}-${index}`}
+
+          {/* Images */}
+          <div className="flex gap-3">
+            {order.items?.slice(0, 3).map((item: any, index: number) => (
+              <div
+                key={index}
                 className="relative h-16 w-16 overflow-hidden rounded-lg bg-secondary"
               >
-                <Image
-                  src={item.product.image}
-                  alt={item.product.name}
-                  fill
-                  className="object-cover"
-                  sizes="64px"
-                />
+               <Image
+  src={item.image || '/placeholder.png'}
+  alt={item.name || 'Product'}
+  fill
+  className="object-cover"
+/>
               </div>
             ))}
-            {order.items.length > 3 && (
-              <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-secondary text-sm font-medium text-muted-foreground">
-                +{order.items.length - 3}
-              </div>
-            )}
           </div>
 
-          {/* Order Details */}
-          <div className="flex items-center justify-between border-t border-border pt-4">
+          {/* Details */}
+          <div className="flex items-center justify-between border-t pt-4">
             <div>
               <p className="text-sm text-muted-foreground">
-                {order.items.reduce((sum, item) => sum + item.quantity, 0)} item{order.items.length !== 1 ? 's' : ''}
+                {order.items?.length || 0} items
               </p>
-              <p className="font-semibold">Total: ${order.total.toFixed(2)}</p>
+              <p className="font-semibold">
+                Total: ₹{order.totalAmount}
+              </p>
             </div>
-            <Button variant="outline" size="sm">
-              View Details
-              <ChevronRight className="ml-1 h-4 w-4" />
-            </Button>
+
+            {/* ✅ FIXED LINK */}
+            <Link href={`/orders/${order._id}`}>
+              <Button variant="outline" size="sm">
+                View Details
+                <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </CardContent>
@@ -89,52 +101,86 @@ function OrderCard({ order }: { order: Order }) {
   )
 }
 
+/* =========================
+   ORDERS CONTENT
+========================= */
 function OrdersContent() {
-  if (sampleOrders.length === 0) {
+  const [orders, setOrders] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // ✅ Get real logged-in userId from browser
+
+  useEffect(() => {
+  const fetchOrders = async () => {
+    try {
+      // ✅ Get userId inside useEffect (safer)
+      const userId = localStorage.getItem("userId")
+
+      // ❗ Stop if no userId
+      if (!userId) {
+        console.error("❌ No userId found. User not logged in.")
+        setLoading(false)
+        return
+      }
+
+      console.log("👉 Fetching orders for:", userId)
+
+      const res = await fetch(
+        `http://localhost:3003/api/orders/user/${userId}`
+      )
+
+      const data = await res.json()
+
+      setOrders(data)
+
+    } catch (err) {
+      console.error("❌ Order fetch error:", err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchOrders()
+}, [])
+
+  if (loading) {
+    return <p className="text-center mt-10">Loading orders...</p>
+  }
+
+  if (orders.length === 0) {
     return (
-      <div className="container mx-auto flex min-h-[50vh] flex-col items-center justify-center px-4 py-16 text-center">
-        <Package className="mb-4 h-16 w-16 text-muted-foreground" />
-        <h1 className="mb-2 font-serif text-2xl font-semibold">No Orders Yet</h1>
-        <p className="mb-6 text-muted-foreground">
-          You haven&apos;t placed any orders yet. Start shopping to see your orders here.
-        </p>
-        <Button asChild>
-          <Link href="/shop">Start Shopping</Link>
-        </Button>
+      <div className="text-center mt-10">
+        <p>No orders found</p>
       </div>
     )
   }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="mb-2 font-serif text-3xl font-semibold text-foreground md:text-4xl">
-          Order History
-        </h1>
-        <p className="text-muted-foreground">
-          Track and manage your orders
-        </p>
-      </div>
+      <h1 className="text-3xl font-semibold mb-6">
+        Order History
+      </h1>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        {sampleOrders.map((order) => (
-          <OrderCard key={order.id} order={order} />
+        {orders.map((order) => (
+          <OrderCard key={order._id} order={order} />
         ))}
       </div>
     </div>
   )
 }
 
+/* =========================
+   PAGE
+========================= */
 export default function OrdersPage() {
   return (
-    <CartProvider>
-      <div className="flex min-h-screen flex-col">
-        <Navbar />
-        <main className="flex-1">
-          <OrdersContent />
-        </main>
-        <Footer />
-      </div>
-    </CartProvider>
+    <div className="flex min-h-screen flex-col">
+      <Navbar />
+      <main className="flex-1">
+        <OrdersContent />
+      </main>
+      <Footer />
+    </div>
   )
 }
