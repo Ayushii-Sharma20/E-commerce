@@ -52,58 +52,7 @@ function CheckoutContent() {
     return Object.keys(newErrors).length === 0
   }
 
-<<<<<<< HEAD
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
 
-  if (!validateForm()) return
-
-  setIsLoading(true)
-
-  try {
-    // ✅ Correct total calculation (IMPORTANT FIX)
-    const calculatedTotal = items.reduce(
-      (sum, item) => sum + item.product.price * item.quantity,
-      0
-    )
-
-    const orderData = {
-      userId: "123",
-      items: items.map(item => ({
-        productId: item.product._id,
-        name: item.product.name,
-        price: item.product.price,
-        quantity: item.quantity,
-        size: item.size,
-        color: item.color,
-        image: item.product.image
-      })),
-      totalAmount: calculatedTotal, // ✅ FIXED
-      shippingInfo,
-      paymentMethod
-    }
-
-    console.log("ORDER DATA:", orderData) // ✅ DEBUG
-
-    const res = await ORDER_API.post("/", orderData)
-
-    console.log("ORDER SUCCESS:", res.data)
-
-    const orderId = res.data?._id || res.data?.id
-
-    clearCart()
-
-    router.push(`/order-confirmation?id=${orderId}`)
-
-  } catch (err: any) {
-    console.error("ORDER ERROR:", err.response?.data || err.message)
-    alert("Order failed")
-  } finally {
-    setIsLoading(false) // ✅ ALWAYS STOP LOADING (CRITICAL FIX)
-  }
-}
-
-=======
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
   e.preventDefault()
   
@@ -153,7 +102,7 @@ const handleSubmit = async (e: React.FormEvent) => {
     alert("Order failed")
   }
 }
->>>>>>> 4dbd4ea08b1e4f072408e20fdf3e4c21f854ee7a
+
   if (items.length === 0) {
     return (
       <div className="container mx-auto flex min-h-[50vh] flex-col items-center justify-center px-4 py-16 text-center">
