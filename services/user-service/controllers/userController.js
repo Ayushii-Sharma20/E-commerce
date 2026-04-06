@@ -5,7 +5,9 @@ const User = require('../models/User');
 // REGISTER
 exports.registerUser = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    console.log("BODY:", req.body); // ✅ DEBUG INSIDE FUNCTION
+
+    const { name, email, password, role } = req.body;
 
     const exists = await User.findOne({ email });
     if (exists) return res.status(400).json("User already exists");
@@ -15,10 +17,17 @@ exports.registerUser = async (req, res) => {
     const user = await User.create({
       name,
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role
     });
 
-    res.status(201).json(user);
+    res.status(201).json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    });
+
   } catch (err) {
     res.status(500).json(err.message);
   }
@@ -41,19 +50,22 @@ exports.loginUser = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-   res.json({
-  token,
-  user: {
-    _id: user._id,   // ✅ VERY IMPORTANT
-    email: user.email
-  }
-});
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }
+    });
+
   } catch (err) {
     res.status(500).json(err.message);
   }
 };
 
-// PROFILE (Protected)
+// PROFILE
 exports.getProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');

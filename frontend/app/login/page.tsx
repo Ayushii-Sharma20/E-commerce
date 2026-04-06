@@ -13,11 +13,16 @@ export default function LoginPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+
   const [formData, setFormData] = useState({
     email: '',
     password: ''
   })
+
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  // ✅ ⭐ FIX (ADDED ROLE STATE)
+  const [role, setRole] = useState("buyer")
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
@@ -38,42 +43,53 @@ export default function LoginPage() {
     return Object.keys(newErrors).length === 0
   }
 
- const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault()
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
 
-  if (!validateForm()) return
+    if (!validateForm()) return
 
-  setIsLoading(true)
+    setIsLoading(true)
 
-  try {
-    const res = await fetch("http://localhost:3001/api/users/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(formData)
-    })
+    try {
+      const res = await fetch("http://localhost:3001/api/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(formData) // (keeping your original logic)
+      })
 
-    const data = await res.json()
+      const data = await res.json()
 
-    if (!res.ok) {
-      throw new Error(data.message || "Login failed")
+      if (!res.ok) {
+        throw new Error(data.message || "Login failed")
+      }
+
+      // ✅ Store token
+      localStorage.setItem("token", data.token)
+
+      // ✅ Store userId
+      localStorage.setItem("userId", data.user._id)
+
+      // ✅ Store role
+      localStorage.setItem("role", data.user.role)
+
+      // ✅ Role-based redirect
+      if (data.user.role === "admin") {
+        router.push("/admin")
+      } else if (data.user.role === "seller") {
+        router.push("/seller")
+      } else {
+        router.push("/shop")
+      }
+
+    } catch (err: any) {
+      alert(err.message || "Login failed ❌")
     }
 
-   // ✅ Store token
-localStorage.setItem("token", data.token)
-
-// ✅ 🔥 ADD THIS LINE (VERY IMPORTANT)
-localStorage.setItem("userId", data.user._id)
-
-    router.push("/profile")
-
-  } catch (err: any) {
-    alert(err.message || "Login failed ❌")
+    setIsLoading(false)
   }
 
-  setIsLoading(false)
-}
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-md">
@@ -92,8 +108,11 @@ localStorage.setItem("userId", data.user._id)
               Enter your credentials to access your account
             </CardDescription>
           </CardHeader>
+
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -108,7 +127,8 @@ localStorage.setItem("userId", data.user._id)
                   <p className="text-sm text-destructive">{errors.email}</p>
                 )}
               </div>
-              
+
+              {/* Password */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="password">Password</Label>
@@ -119,6 +139,7 @@ localStorage.setItem("userId", data.user._id)
                     Forgot password?
                   </Link>
                 </div>
+
                 <div className="relative">
                   <Input
                     id="password"
@@ -128,11 +149,11 @@ localStorage.setItem("userId", data.user._id)
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
                   />
+
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -141,16 +162,39 @@ localStorage.setItem("userId", data.user._id)
                     )}
                   </button>
                 </div>
+
                 {errors.password && (
                   <p className="text-sm text-destructive">{errors.password}</p>
                 )}
               </div>
-              
+
+              {/* ⭐ ROLE SELECTOR */}
+              <div className="space-y-2">
+                <Label>Login As</Label>
+                <div className="flex gap-2">
+                  {["buyer", "seller", "admin"].map((r) => (
+                    <button
+                      key={r}
+                      type="button"
+                      onClick={() => setRole(r)}
+                      className={`flex-1 rounded-md border px-3 py-2 text-sm capitalize transition ${
+                        role === r
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border hover:bg-muted"
+                      }`}
+                    >
+                      {r}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Submit */}
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
-            
+
             <div className="mt-6 text-center text-sm">
               <span className="text-muted-foreground">
                 Don&apos;t have an account?{' '}
@@ -161,7 +205,7 @@ localStorage.setItem("userId", data.user._id)
             </div>
           </CardContent>
         </Card>
-        
+
         <p className="mt-8 text-center text-sm text-muted-foreground">
           <Link href="/" className="hover:text-foreground">
             &larr; Back to home

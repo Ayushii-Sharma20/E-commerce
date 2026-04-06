@@ -5,18 +5,20 @@ const {
   createOrder,
   getOrders,
   getUserOrders,
-  getOrderById   
-} = require("../controllers/orderController");;
+  getOrderById,
+  updateOrderStatus
+} = require("../controllers/orderController");
 
-// Create order
+// ✅ CREATE
 router.post("/", createOrder);
 
-// Get all orders
+// ✅ GET
 router.get("/", getOrders);
-
-// Get user orders
 router.get("/user/:userId", getUserOrders);
-router.get("/:id", getOrderById);
 
+// ✅ IMPORTANT: before :id
+router.patch("/status/:id", updateOrderStatus);
+
+router.get("/:id", getOrderById);
 
 module.exports = router;

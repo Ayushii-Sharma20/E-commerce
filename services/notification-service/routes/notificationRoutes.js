@@ -1,14 +1,18 @@
 const express = require('express')
 const router = express.Router()
+
 const controller = require('../controllers/notificationController')
 
-// CREATE (optional)
+// ✅ IMPORTANT (used by order-service)
+router.post('/notify', controller.createNotification)
+
+// optional
 router.post('/', controller.createNotification)
 
-// ✅ FIXED: more specific route
+// GET
 router.get('/user/:userId', controller.getNotifications)
 
-// MARK as read
+// MARK READ
 router.patch('/:id/read', controller.markAsRead)
 
 module.exports = router

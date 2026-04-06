@@ -6,7 +6,13 @@ const productSchema = new mongoose.Schema({
   description: String,
   stock: Number,
   image: String,
-  category: String
+  category: String,
+
+  // ✅ NEW FIELD (IMPORTANT)
+  sellerId: {
+    type: String,
+    required: true
+  }
 });
 
 module.exports = mongoose.model("Product", productSchema);

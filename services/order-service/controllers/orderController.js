@@ -1,10 +1,9 @@
 const Order = require("../models/Order");
 const axios = require("axios");
-const { sendToQueue } = require('../utils/rabbitmq');
+const { sendToQueue } = require("../utils/rabbitmq");
 
-// ✅ Create Order
-const createOrder = async (req, res) => 
-  {
+// ✅ CREATE ORDER
+const createOrder = async (req, res) => {
   const { userId, items, totalAmount, shippingInfo, paymentMethod } = req.body;
 
   try {
@@ -12,11 +11,10 @@ const createOrder = async (req, res) =>
       return res.status(400).json({ message: "No items in order" });
     }
 
-
     let enrichedItems = [];
+    let sellerIds = [];
 
     // 🔥 STEP 1: VALIDATE + RESERVE + ENRICH
-
     for (let item of items) {
       const productRes = await axios.get(
         `http://localhost:3002/api/products/${item.productId}`
@@ -34,20 +32,22 @@ const createOrder = async (req, res) =>
         });
       }
 
-
-
       // 🔒 Reserve stock
-try {
-  await axios.post("http://localhost:3004/api/inventory/reserve", {
-    productId: item.productId,
-    quantity: item.quantity
-  });
-} catch (err) {
-  return res.status(400).json({
-    message: `${product.name} is out of stock`
-  });
-}
-      // ✅ Build enriched item (USE BACKEND DATA)
+      try {
+        await axios.post("http://localhost:3004/api/inventory/reserve", {
+          productId: item.productId,
+          quantity: item.quantity
+        });
+      } catch (err) {
+        return res.status(400).json({
+          message: `${product.name} is out of stock`
+        });
+      }
+
+      // ✅ Collect sellerId
+      sellerIds.push(product.sellerId);
+
+      // ✅ Enriched item
       enrichedItems.push({
         productId: product._id,
         name: product.name,
@@ -55,8 +55,6 @@ try {
         quantity: item.quantity,
         size: item.size,
         color: item.color,
-
-        // 🔥 FIX: make image URL absolute
         image: product.image?.startsWith("http")
           ? product.image
           : `http://localhost:3002${product.image}`
@@ -66,7 +64,7 @@ try {
     // 💾 STEP 2: SAVE ORDER
     const order = new Order({
       userId,
-      items: enrichedItems, // ✅ USE ENRICHED DATA
+      items: enrichedItems,
       totalAmount,
       shippingInfo,
       paymentMethod,
@@ -87,41 +85,47 @@ try {
     order.status = "CONFIRMED";
     await order.save();
 
-
-    // 🔔 SEND EVENT
+    // 🔔 SEND EVENT (RabbitMQ)
     sendToQueue({
       userId: order.userId,
       message: `Order ${order._id} placed successfully`,
       type: "order"
     });
 
+    // 🔔 NOTIFY SELLERS (NEW FEATURE)
+    try {
+      for (let sellerId of sellerIds) {
+        await axios.post("http://localhost:3005/api/notify", {
+          sellerId,
+          message: `New order ${order._id} received`
+        });
+      }
+      console.log("📢 Sellers notified");
+    } catch (err) {
+      console.log("⚠️ Notification failed (non-blocking)");
+    }
 
     res.status(201).json(order);
 
   } catch (err) {
-  console.error("❌ ORDER ERROR:", err.message)
+    console.error("❌ ORDER ERROR:", err.message);
 
-  // ✅ If error comes from another service (inventory/product)
-  if (err.response && err.response.data) {
-  const errorData = err.response.data
+    if (err.response && err.response.data) {
+      return res.status(err.response.status || 400).json({
+        message:
+          err.response.data.message ||
+          err.response.data.error ||
+          "Out of stock"
+      });
+    }
 
-  return res.status(err.response.status || 400).json({
-    message:
-      errorData.message ||
-      errorData.error ||
-      errorData ||
-      "Out of stock"
-  })
-}
-
-  // ✅ Fallback (internal error)
-  res.status(500).json({
-    message: "Something went wrong while creating order"
-  })
-}
+    res.status(500).json({
+      message: "Something went wrong while creating order"
+    });
+  }
 };
 
-// ✅ Get All Orders
+// ✅ GET ALL ORDERS
 const getOrders = async (req, res) => {
   try {
     const orders = await Order.find();
@@ -131,8 +135,7 @@ const getOrders = async (req, res) => {
   }
 };
 
-
-// ✅ Get Order By ID
+// ✅ GET ORDER BY ID
 const getOrderById = async (req, res) => {
   try {
     const order = await Order.findById(req.params.id);
@@ -147,8 +150,7 @@ const getOrderById = async (req, res) => {
   }
 };
 
-
-// ✅ Get Orders by User
+// ✅ GET USER ORDERS
 const getUserOrders = async (req, res) => {
   try {
     const orders = await Order.find({ userId: req.params.userId });
@@ -158,9 +160,27 @@ const getUserOrders = async (req, res) => {
   }
 };
 
+// ✅ UPDATE STATUS (NEW FEATURE)
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true }
+    );
+
+    res.json(order);
+  } catch (err) {
+    res.status(500).json({ message: "Error updating status" });
+  }
+};
+
 module.exports = {
   createOrder,
   getOrders,
   getUserOrders,
-  getOrderById
+  getOrderById,
+  updateOrderStatus
 };

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose')   // ✅ ONLY ONCE
 
 const notificationSchema = new mongoose.Schema(
   {
@@ -22,7 +22,9 @@ const notificationSchema = new mongoose.Schema(
   { timestamps: true }
 )
 
-// ✅ optional: index for faster queries
 notificationSchema.index({ userId: 1, createdAt: -1 })
 
-module.exports = mongoose.model('Notification', notificationSchema)
+// ✅ SAFE EXPORT
+module.exports =
+  mongoose.models.Notification ||
+  mongoose.model('Notification', notificationSchema)
