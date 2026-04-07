@@ -9,6 +9,7 @@ import { Footer } from '@/components/footer'
 
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { ORDER_API } from '@/lib/api'
 
 export default function OrderDetailsPage() {
   const { id } = useParams()
@@ -18,12 +19,8 @@ export default function OrderDetailsPage() {
   useEffect(() => {
     const fetchOrder = async () => {
       try {
-        const res = await fetch(`http://localhost:3003/api/orders/${id}`)
-        const data = await res.json()
-
-        console.log("📦 Order Data:", data)
-
-        setOrder(data)
+        const res = await ORDER_API.get(`/${id}`)
+        setOrder(res.data.order)
       } catch (err) {
         console.error("❌ Error fetching order:", err)
       } finally {
@@ -113,7 +110,7 @@ export default function OrderDetailsPage() {
                   {/* DETAILS */}
                   <div className="flex-1">
                     <p className="font-medium">
-                      {item.product?.name || "Product"}
+                      {item.name || "Product"}
                     </p>
 
                     <p className="text-sm text-gray-500">

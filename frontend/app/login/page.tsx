@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { USER_API } from '@/lib/api'
+import { setSession } from '@/lib/auth'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -21,7 +23,6 @@ export default function LoginPage() {
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  // ✅ ⭐ FIX (ADDED ROLE STATE)
   const [role, setRole] = useState("buyer")
 
   const validateForm = () => {
@@ -51,28 +52,9 @@ export default function LoginPage() {
     setIsLoading(true)
 
     try {
-      const res = await fetch("http://localhost:3001/api/users/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(formData) // (keeping your original logic)
-      })
+      const { data } = await USER_API.post("/login", formData)
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.message || "Login failed")
-      }
-
-      // ✅ Store token
-      localStorage.setItem("token", data.token)
-
-      // ✅ Store userId
-      localStorage.setItem("userId", data.user._id)
-
-      // ✅ Store role
-      localStorage.setItem("role", data.user.role)
+      setSession(data.token, data.user)
 
       // ✅ Role-based redirect
       if (data.user.role === "admin") {
@@ -84,7 +66,7 @@ export default function LoginPage() {
       }
 
     } catch (err: any) {
-      alert(err.message || "Login failed ❌")
+      alert(err.response?.data?.message || err.message || "Login failed ❌")
     }
 
     setIsLoading(false)
@@ -187,6 +169,9 @@ export default function LoginPage() {
                     </button>
                   ))}
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  This only changes the redirect target. Your real access is based on your account role.
+                </p>
               </div>
 
               {/* Submit */}

@@ -10,6 +10,8 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { useCart } from '@/lib/cart-context'
 import { useRouter } from "next/navigation"
+import { PRODUCT_API } from "@/lib/api"
+import { normalizeProduct } from "@/lib/product-utils"
 
 // 🔹 Product Detail Component
 function ProductDetailContent({ id }: { id: string }) {
@@ -28,9 +30,8 @@ function ProductDetailContent({ id }: { id: string }) {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:3002/api/products/${id}`)
-        const data = await res.json()
-        setProduct(data)
+        const res = await PRODUCT_API.get(`/${id}`)
+        setProduct(normalizeProduct(res.data.product))
       } catch (err) {
         console.error("❌ Product fetch error:", err)
       } finally {
@@ -40,6 +41,15 @@ function ProductDetailContent({ id }: { id: string }) {
 
     fetchProduct()
   }, [id])
+
+  useEffect(() => {
+    if (!product) {
+      return
+    }
+
+    setSelectedSize(product.sizes?.[0] || "")
+    setSelectedColor(product.colors?.[0] || "")
+  }, [product])
 
   // ⏳ Loading
   if (loading) {
@@ -59,10 +69,13 @@ function ProductDetailContent({ id }: { id: string }) {
   }
 
   // ✅ Enhance product
+  const activeVariant = product.variants?.find(
+    (variant: { color: string; image: string }) => variant.color === selectedColor
+  )
+
   const enhancedProduct = {
     ...product,
-    sizes: ["S", "M", "L"],
-    colors: ["Red", "Black"],
+    image: activeVariant?.image || product.image,
   }
 
   const handleAddToCart = () => {

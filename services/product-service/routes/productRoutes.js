@@ -1,33 +1,34 @@
 const express = require("express");
-const router = express.Router();
 
 const controller = require("../controllers/productController");
+const verifyToken = require("../middleware/authMiddleware");
+const verifyRole = require("../middleware/authorize");
 
-// DEBUG
-console.log(controller);
+const router = express.Router();
 
-// ✅ CREATE + GET ALL
-router.post("/", controller.createProduct);
 router.get("/", controller.getProducts);
-
-// ✅ IMPORTANT: Put this BEFORE :id
-router.get("/seller/:sellerId", async (req, res) => {
-  try {
-    const Product = require("../models/Product");
-
-    const products = await Product.find({
-      sellerId: req.params.sellerId
-    });
-
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
-// ✅ OTHER ROUTES
+router.get("/admin/all", verifyToken, verifyRole(["admin"]), controller.getAllProducts);
+router.get("/seller/me", verifyToken, verifyRole(["seller"]), controller.getMyProducts);
 router.get("/:id", controller.getProductById);
-router.put("/:id", controller.updateProduct);
-router.delete("/:id", controller.deleteProduct);
+
+router.post("/", verifyToken, verifyRole(["seller", "admin"]), controller.createProduct);
+router.put(
+  "/:id",
+  verifyToken,
+  verifyRole(["seller", "admin"]),
+  controller.updateProduct
+);
+router.delete(
+  "/:id",
+  verifyToken,
+  verifyRole(["seller", "admin"]),
+  controller.deleteProduct
+);
+router.patch(
+  "/:id/approve",
+  verifyToken,
+  verifyRole(["admin"]),
+  controller.approveProduct
+);
 
 module.exports = router;

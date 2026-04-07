@@ -10,6 +10,10 @@ export interface Product {
   description: string
   sizes: string[]
   colors: string[]
+  variants?: Array<{
+    color: string
+    image: string
+  }>
   inStock: boolean
   featured?: boolean
   trending?: boolean

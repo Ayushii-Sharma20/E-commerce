@@ -13,6 +13,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
+import { USER_API } from "@/lib/api";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -22,32 +23,21 @@ export default function RegisterPage() {
     email: "",
     password: "",
   });
-
-  const [role, setRole] = useState("buyer");
+  const [role, setRole] = useState<"buyer" | "seller">("buyer");
 
   const handleRegister = async (e: any) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:3001/api/users/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...formData,
-          role,
-        }),
+      await USER_API.post("/register", {
+        ...formData,
+        role,
       });
-
-      const data = await res.json();
-
-      if (!res.ok) throw new Error(data.message);
 
       alert("Registered ✅");
       router.push("/login");
     } catch (err: any) {
-      alert(err.message || "Error ❌");
+      alert(err.response?.data?.message || err.message || "Error ❌");
     }
   };
 
@@ -111,27 +101,27 @@ export default function RegisterPage() {
                 />
               </div>
 
-              {/* 🔥 ROLE SELECTOR (BEAUTIFUL) */}
               <div className="space-y-2">
                 <Label>Register As</Label>
                 <div className="flex gap-2">
-                  {["buyer", "seller"].map((r) => (
+                  {(["buyer", "seller"] as const).map((value) => (
                     <button
-                      key={r}
+                      key={value}
                       type="button"
-                      onClick={() => setRole(r)}
+                      onClick={() => setRole(value)}
                       className={`flex-1 rounded-md border px-3 py-2 text-sm capitalize transition ${
-                        role === r
+                        role === value
                           ? "border-primary bg-primary/10 text-primary"
                           : "border-border hover:bg-muted"
                       }`}
                     >
-                      {r}
+                      {value}
                     </button>
                   ))}
                 </div>
               </div>
 
+             
               {/* Submit */}
               <Button type="submit" className="w-full">
                 Create Account

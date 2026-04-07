@@ -20,6 +20,7 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 
 import { ORDER_API } from '@/lib/api'
+import { getSessionUser } from '@/lib/auth'
 
 /* =========================
    STATUS CONFIG (FIXED)
@@ -110,18 +111,16 @@ function OrdersContent() {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const userId = localStorage.getItem("userId")
+        const user = getSessionUser()
 
-        if (!userId) {
-          console.error("❌ No userId found")
+        if (!user?._id) {
+          console.error("❌ No logged-in user found")
           setLoading(false)
           return
         }
 
-        console.log("👉 Fetching orders for:", userId)
-
-        const res = await ORDER_API.get(`/user/${userId}`)
-        setOrders(res.data)
+        const res = await ORDER_API.get(`/user/${user._id}`)
+        setOrders(res.data.orders || [])
 
       } catch (err) {
         console.error("❌ Order fetch error:", err)

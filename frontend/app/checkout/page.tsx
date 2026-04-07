@@ -15,6 +15,29 @@ import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
 import { CartProvider, useCart } from '@/lib/cart-context'
 import { ORDER_API } from "@/lib/api"
+import { getSessionUser, handleUnauthorizedSession, isExpiredSessionError } from "@/lib/auth"
+
+const getOrderErrorMessage = (err: any) => {
+  const data = err?.response?.data
+
+  if (typeof data?.message === "string" && data.message.trim()) {
+    return data.message
+  }
+
+  if (typeof data?.error === "string" && data.error.trim()) {
+    return data.error
+  }
+
+  if (typeof data === "string" && data.trim()) {
+    return data
+  }
+
+  if (data && typeof data === "object") {
+    return JSON.stringify(data)
+  }
+
+  return err?.message || "Failed to create order"
+}
 function CheckoutContent() {
   const router = useRouter()
   const { items, total, clearCart } = useCart()
@@ -63,52 +86,56 @@ function CheckoutContent() {
   setIsLoading(true)
   
   try {
-    // ✅ Get real userId from localStorage
-    const userId = localStorage.getItem("userId")
+    const user = getSessionUser()
 
     // ❗ Safety check
-    if (!userId) {
-      alert("User not logged in")
+    if (!user) {
+      handleUnauthorizedSession()
+      setIsLoading(false)
+      return
+    }
+
+    if (user.role !== "buyer" && user.role !== "admin") {
+      alert("Only buyers can place orders")
       setIsLoading(false)
       return
     }
 
     const res = await ORDER_API.post("/", {
-      userId, // ✅ FIXED (dynamic userId)
-
       items: items.map(item => ({
         productId: item.product._id,
-        name: item.product.name,
-        price: item.product.price,
         quantity: item.quantity,
         size: item.size,
         color: item.color,
-        image: item.product.image
       })),
 
-      totalAmount: total,
       shippingInfo,
       paymentMethod
     })
 
-    const orderId = res.data._id
+    const orderId = res.data.order._id
 
     clearCart()
     setIsLoading(false)
 
     router.push(`/order-confirmation?id=${orderId}`)
 
-  }  catch (err: any) {
-  console.error("❌ ORDER ERROR:", err.response?.data || err.message)
+}  catch (err: any) {
+  console.error("❌ ORDER ERROR:", {
+    status: err?.response?.status,
+    data: err?.response?.data,
+    message: err?.message
+  })
 
   setIsLoading(false)
 
-  const message =
-    err.response?.data?.message ||
-    err.response?.data ||
-    "Out of stock"
+  const message = isExpiredSessionError(err)
+    ? (handleUnauthorizedSession(), "Session expired")
+    : getOrderErrorMessage(err)
 
-  alert(message)
+  if (message !== "Session expired") {
+    alert(message)
+  }
 }
 }
 

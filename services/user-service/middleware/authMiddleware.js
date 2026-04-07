@@ -1,17 +1,41 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = (req, res, next) => {
-  const token = req.header("Authorization");
+  const authHeader = req.header("Authorization") || req.header("authorization");
 
-  if (!token) {
-    return res.status(401).json({ message: "No token, authorization denied" });
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({
+      success: false,
+      message: "Authorization token is required",
+      error: "Missing bearer token"
+    });
   }
 
   try {
-    const decoded = jwt.verify(token.replace("Bearer ", ""), "secret");
-    req.user = decoded;
-    next();
-  } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId || decoded.id;
+
+    if (!userId || !decoded.role) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token payload",
+        error: "Token must include userId and role"
+      });
+    }
+
+    req.user = {
+      userId: String(userId),
+      id: String(userId),
+      role: decoded.role
+    };
+
+    return next();
+  } catch (error) {
+    return res.status(401).json({
+      success: false,
+      message: "Token validation failed",
+      error: error.message
+    });
   }
 };

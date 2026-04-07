@@ -19,6 +19,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
 
   const addItem = (product: Product, quantity: number, size: string, color: string) => {
+    const matchedVariant = product.variants?.find((variant) => variant.color === color)
+    const cartProduct = matchedVariant ? { ...product, image: matchedVariant.image } : product
+
     setItems(prev => {
       const existingIndex = prev.findIndex(
         item => item.product._id === product._id && item.size === size && item.color === color
@@ -27,12 +30,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (existingIndex >= 0) {
         const updated = [...prev]
         updated[existingIndex].quantity += quantity
+        updated[existingIndex].product = cartProduct
         return updated
         
         
       }
       
-      return [...prev, { product, quantity, size, color }]
+      return [...prev, { product: cartProduct, quantity, size, color }]
     })
   }
 

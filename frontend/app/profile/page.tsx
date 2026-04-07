@@ -11,7 +11,9 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import { DashboardChatPanel } from '@/components/dashboard-chat-panel'
 import { CartProvider } from '@/lib/cart-context'
+import { clearSession } from '@/lib/auth'
 
 function ProfileContent() {
   const [isEditing, setIsEditing] = useState(false)
@@ -45,8 +47,8 @@ function ProfileContent() {
         if (!res.ok) throw new Error("Failed")
 
         setUserData({
-          name: data.name,
-          email: data.email,
+          name: data.user.name,
+          email: data.user.email,
           phone: ''
         })
 
@@ -232,6 +234,14 @@ function ProfileContent() {
               </Button>
             </CardContent>
           </Card>
+
+          <section id="buyer-chat">
+            <DashboardChatPanel
+              title="Buyer Support Chat"
+              description="Message sellers about your products and orders, or reach admin support from your buyer dashboard."
+              emptyStateMessage="Choose a seller or admin conversation from your buyer support inbox."
+            />
+          </section>
         </div>
 
         {/* Sidebar */}
@@ -255,7 +265,7 @@ function ProfileContent() {
                 variant="outline"
                 className="w-full justify-start text-destructive hover:text-destructive"
                 onClick={() => {
-                  localStorage.removeItem("token")
+                  clearSession()
                   window.location.href = "/login"
                 }}
               >

@@ -1,24 +1,49 @@
 const express = require("express");
-const router = express.Router();
 
+const verifyToken = require("../middleware/authMiddleware");
+const verifyRole = require("../middleware/authorize");
 const {
   createOrder,
-  getOrders,
   getUserOrders,
-  getOrderById,
-  updateOrderStatus
+  getAllOrders,
+  getSellerOrders,
+  getSellerAnalytics,
+  getAdminAnalytics,
+  updateOrderStatus,
+  getOrderById
 } = require("../controllers/orderController");
 
-// ✅ CREATE
-router.post("/", createOrder);
+const router = express.Router();
 
-// ✅ GET
-router.get("/", getOrders);
-router.get("/user/:userId", getUserOrders);
+router.post("/", verifyToken, verifyRole(["buyer", "admin"]), createOrder);
 
-// ✅ IMPORTANT: before :id
-router.patch("/status/:id", updateOrderStatus);
-
-router.get("/:id", getOrderById);
+router.get("/", verifyToken, verifyRole(["admin"]), getAllOrders);
+router.get(
+  "/admin/analytics",
+  verifyToken,
+  verifyRole(["admin"]),
+  getAdminAnalytics
+);
+router.get("/user/:userId", verifyToken, verifyRole(["buyer", "admin"]), getUserOrders);
+router.get("/seller/orders", verifyToken, verifyRole(["seller"]), getSellerOrders);
+router.get(
+  "/seller/analytics",
+  verifyToken,
+  verifyRole(["seller"]),
+  getSellerAnalytics
+);
+router.get("/:id", verifyToken, verifyRole(["buyer", "seller", "admin"]), getOrderById);
+router.patch(
+  "/:id/status",
+  verifyToken,
+  verifyRole(["seller", "admin"]),
+  updateOrderStatus
+);
+router.get(
+  "/seller/:sellerId",
+  verifyToken,
+  verifyRole(["admin"]),
+  getSellerOrders
+);
 
 module.exports = router;

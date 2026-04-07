@@ -8,8 +8,8 @@ import { Slider } from "@/components/ui/slider"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { ProductCard } from "@/components/product-card"
-import { CartProvider } from "@/lib/cart-context"
 import { PRODUCT_API } from "@/lib/api"
+import { normalizeProduct } from "@/lib/product-utils"
 
 const ITEMS_PER_PAGE = 8
 
@@ -85,7 +85,7 @@ function ShopContent() {
   useEffect(() => {
     PRODUCT_API.get("/")
       .then(res => {
-        setProducts(res.data)
+        setProducts((res.data.products || []).map(normalizeProduct))
         setLoading(false)
       })
       .catch(err => {
