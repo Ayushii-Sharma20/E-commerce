@@ -85,6 +85,7 @@ const setCache = async (key, value, ttl = CACHE_TTL_SECONDS) => {
   }
 
   await redisClient.set(key, JSON.stringify(value), { EX: ttl });
+  console.log(`💾 Redis cache set: ${key}`);
 };
 
 const deleteCache = async (...keys) => {
@@ -93,6 +94,7 @@ const deleteCache = async (...keys) => {
   }
 
   await redisClient.del(keys);
+  console.log(`🧹 Redis cache cleared: ${keys.join(", ")}`);
 };
 
 const extractSellerId = (req) => {
@@ -216,9 +218,11 @@ const fetchProductsByScope = async (includeAll) => {
   const cachedProducts = await getCache(cacheKey);
 
   if (cachedProducts) {
+    console.log(`⚡ Redis cache hit: ${cacheKey}`);
     return JSON.parse(cachedProducts);
   }
 
+  console.log(`🗄️ MongoDB fetch: ${cacheKey}`);
   let products = await Product.find(query).sort({ createdAt: -1 }).lean();
 
   // Backward-compatible fallback for older datasets where seller products were left pending.
@@ -260,11 +264,13 @@ exports.getMyProducts = async (req, res) => {
     const cachedProducts = await getCache(cacheKey);
 
     if (cachedProducts) {
+      console.log(`⚡ Redis cache hit: ${cacheKey}`);
       return sendSuccess(res, 200, "Seller products fetched successfully", {
         products: JSON.parse(cachedProducts)
       });
     }
 
+    console.log(`🗄️ MongoDB fetch: ${cacheKey}`);
     const products = await Product.find({ sellerId: req.user.userId })
       .sort({ createdAt: -1 })
       .lean();
@@ -287,6 +293,7 @@ exports.getProductById = async (req, res) => {
     const cachedProduct = await getCache(cacheKey);
 
     if (cachedProduct) {
+      console.log(`⚡ Redis cache hit: ${cacheKey}`);
       const parsedProduct = JSON.parse(cachedProduct);
 
       if (parsedProduct.status === "APPROVED") {
@@ -298,6 +305,7 @@ exports.getProductById = async (req, res) => {
       await deleteCache(cacheKey);
     }
 
+    console.log(`🗄️ MongoDB fetch: ${cacheKey}`);
     const product = await Product.findById(req.params.id).lean();
     if (!product) {
       return sendError(res, 404, "Product not found");
